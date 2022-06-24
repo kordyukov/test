@@ -1,23 +1,28 @@
 package main
 
 import (
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net"
 	"net/http"
+	"test/internal/user"
 	"time"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	name := params.ByName("name")
-	w.Write([]byte(fmt.Sprintf("Hello %s", name)))
+func main() {
+	log.Println("create router")
+	router := httprouter.New()
+
+	log.Println("register user handler")
+	handler := user.NewHandler()
+	handler.Register(router)
+
+	start(router)
+
 }
 
-func main() {
-	router := httprouter.New()
-	router.GET("/:name", indexHandler)
-
+func start(router *httprouter.Router) {
+	log.Println("start application")
 	listener, err := net.Listen("tcp", "127.0.0.1:1234")
 
 	if err != nil {
@@ -29,6 +34,6 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-
+	log.Println("server is licening port 1234")
 	log.Fatalln(server.Serve(listener))
 }
